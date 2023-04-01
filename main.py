@@ -18,14 +18,31 @@ CORS(app)
 # Kết nối database
 db.init_app(app)
 
-@app.route('/')
-def index():
-    # Tạo hình ảnh đồ thị
-    fig, ax = plt.subplots()
-    ax.plot([1, 2, 3, 4], [1, 4, 2, 3])
-    ax.set_title('Example Plot')
-    # Tạo đối tượng canvas của hình ảnh đồ thị và chuyển thành dữ liệu ảnh PNG
-    canvas = FigureCanvas(fig)
+@app.route('/number-product')
+def number_product():
+
+    laptops = LaptopModel.query.all()
+    canvas = LaptopModel.number_product(laptops)
+    output = io.BytesIO()
+    canvas.print_png(output)
+    # Truyền dữ liệu ảnh đến trang web
+    return Response(output.getvalue(), mimetype='image/png')
+
+@app.route('/percent-discount')
+def percent_discount():
+
+    laptops = LaptopModel.query.all()
+    canvas = LaptopModel.min_max_brand(laptops)
+    output = io.BytesIO()
+    canvas.print_png(output)
+    # Truyền dữ liệu ảnh đến trang web
+    return Response(output.getvalue(), mimetype='image/png')
+
+@app.route('/new-price')
+def new_price_best_seller():
+
+    laptops = LaptopModel.query.all()
+    canvas = LaptopModel.new_price_best_seller(laptops)
     output = io.BytesIO()
     canvas.print_png(output)
     # Truyền dữ liệu ảnh đến trang web
@@ -40,7 +57,6 @@ def crawl_laptop():
         laptop.save()
     
     LaptopModel.avg_price(laptops)
-    LaptopModel.min_max_brand(laptops)
     
     return LaptopModel.serialize_list(laptops)
 

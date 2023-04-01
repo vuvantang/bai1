@@ -1,7 +1,10 @@
 from flask_sqlalchemy import SQLAlchemy
 import json
 import pandas as pd
+from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
+from matplotlib.figure import Figure
 import matplotlib.pyplot as plt
+import io
 
 
 db = SQLAlchemy()
@@ -79,17 +82,50 @@ class LaptopModel(db.Model):
         print("\nTrung vị giá bán mới với các Brand:")
         print(median_new_price_by_brand)
 
+    def number_product(laptops):
+        df = pd.DataFrame(LaptopModel.convert_list_object(laptops))
+        # Định dạng lại dữ liệu
+        brand_count = df['brand'].value_counts()
+
+        # Hiển thị biểu đồ
+        # Vẽ biểu đồ
+        fig = Figure()
+        ax = fig.add_subplot(111)
+        ax.bar(brand_count.index, brand_count.values)
+
+        # Đặt tên cho trục x và trục y
+        ax.set_xlabel('Brand')
+        ax.set_ylabel('Number of Productss')
+        return FigureCanvas(fig)
+
     def min_max_brand(laptops):
         df = pd.DataFrame(LaptopModel.convert_list_object(laptops))
+        # Định dạng lại dữ liệu
         # Định dạng lại dữ liệu
         brand_discount = df.groupby('brand')['percent_discount'].agg(['min', 'max'])
 
         # Vẽ biểu đồ
-        brand_discount.plot(kind='bar')
+        fig, ax = plt.subplots()
+        brand_discount.plot(kind='bar', ax=ax)
 
         # Đặt tên cho trục x và trục y
-        plt.xlabel('Brand')
-        plt.ylabel('Percent Discount')
+        ax.set_xlabel('Brand')
+        ax.set_ylabel('Percent Discount')
+        return FigureCanvas(fig)
 
-        # Hiển thị biểu đồ
-        plt.savefig('brand_discount.png')
+    def new_price_best_seller(laptops):
+        df = pd.DataFrame(LaptopModel.convert_list_object(laptops))
+        # Lọc các sản phẩm là BestSeller
+        bestsellers = df[df['best_seller'] == True]
+
+        # Tạo instance của Figure
+        fig = plt.figure()
+
+        # Vẽ histogram trên Figure
+        plt.hist(bestsellers['new_price'], bins=10)
+
+        # Đặt tên cho trục x và trục y
+        plt.xlabel('New Price')
+        plt.ylabel('Count')
+
+        return FigureCanvas(fig)
