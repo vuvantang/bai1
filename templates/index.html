@@ -7,22 +7,24 @@ block content %}
   >Thêm Laptop</a
 >
 <div class="btn-group" role="group" aria-label="Basic example">
-  <button type="button" class="btn btn-success btn-sm">TB & TV Giá cũ</button>
-  <button type="button" class="btn btn-primary btn-sm">
-    Sản phẩm theo Thương hiệu
-  </button>
-  <button type="button" class="btn btn-warning btn-sm">
-    Giá Min, Max theo Thương hiệu
-  </button>
-  <button type="button" class="btn btn-info btn-sm">
-    Giá mới của sản phẩm bán chạy
-  </button>
+  <a href="{{ url_for('avg_brand') }}" class="btn btn-success btn-sm"
+    >TB & TV Giá theo Thương hiệu</a
+  >
+  <a href="{{ url_for('number_product') }}" class="btn btn-primary btn-sm"
+    >Sản phẩm theo Thương hiệu</a
+  >
+  <a href="{{ url_for('percent_discount') }}" class="btn btn-warning btn-sm"
+    >Min, Max % Giảm theo Thương hiệu</a
+  >
+  <a href="{{ url_for('new_price_best_seller') }}" class="btn btn-info btn-sm"
+    >Giá mới của sản phẩm bán chạy</a
+  >
 </div>
 <table class="table table-striped">
   <thead>
     <tr>
       <th>#</th>
-      <th>ID</th>
+      <th>STT</th>
       <th>Tên</th>
       <th>Thương hiệu</th>
       <th>Giá cũ</th>
@@ -48,7 +50,7 @@ block content %}
           Xóa
         </button>
       </td>
-      <td>{{ laptop.id }}</td>
+      <td>{{ loop.index }}</td>
       <td>{{ laptop.name }}</td>
       <td>{{ laptop.brand }}</td>
       <td>{{ laptop.old_price }}</td>

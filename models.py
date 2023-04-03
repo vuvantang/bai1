@@ -1,13 +1,11 @@
 from flask_sqlalchemy import SQLAlchemy
 import json
 import pandas as pd
-from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
-from matplotlib.figure import Figure
 import matplotlib.pyplot as plt
-import io
 
 
 db = SQLAlchemy()
+
 
 class LaptopModel(db.Model):
     __tablename__ = 'LAPTOPBESTSELLER'
@@ -28,7 +26,6 @@ class LaptopModel(db.Model):
         self.percent_discount = percent_discount
         self.best_seller = best_seller
 
-
     def to_dict(self):
         return {
             'name': self.name,
@@ -43,14 +40,13 @@ class LaptopModel(db.Model):
     def serialize_list(cls, laptops):
         laptop_dicts = [laptop.to_dict() for laptop in laptops]
         return json.dumps(laptop_dicts, default=lambda x: x.__dict__)
-    
+
     def convert_list_object(laptops):
         return [laptop.to_dict() for laptop in laptops]
-    
 
     def save(self):
         laptop = LaptopModel.query.filter(LaptopModel.name == self.name,
-                                           LaptopModel.new_price == self.new_price).first()
+                                          LaptopModel.new_price == self.new_price).first()
         if laptop:
             laptop.brand = self.brand
             laptop.old_price = self.old_price
@@ -59,73 +55,84 @@ class LaptopModel(db.Model):
             laptop.best_seller = self.best_seller
         else:
             db.session.add(self)
-        
+
         db.session.commit()
         return self.id
-    
 
-    def avg_price(laptops):
-
-        df = pd.DataFrame(LaptopModel.convert_list_object(laptops))
-        mean_old_price_by_brand = df.groupby("brand")["old_price"].mean()
-        mean_new_price_by_brand = df.groupby("brand")["new_price"].mean()
-        median_old_price_by_brand = df.groupby("brand")["old_price"].median()
-        median_new_price_by_brand = df.groupby("brand")["new_price"].median()
-
-        # hiển thị kết quả
-        print("Trung bình giá bán cũ với các Brand:")
-        print(mean_old_price_by_brand)
-        print("\nTrung bình giá bán mới với các Brand:")
-        print(mean_new_price_by_brand)
-        print("\nTrung vị giá bán cũ với các Brand:")
-        print(median_old_price_by_brand)
-        print("\nTrung vị giá bán mới với các Brand:")
-        print(median_new_price_by_brand)
-
-    def number_product(laptops):
-        df = pd.DataFrame(LaptopModel.convert_list_object(laptops))
-        # Định dạng lại dữ liệu
-        brand_count = df['brand'].value_counts()
+    def trungbinh_trungvi():
+        df = pd.DataFrame(LaptopModel.convert_list_object(
+            LaptopModel.query.all()))
+        df_grouped = df.groupby('brand').agg(
+            {'old_price': ['mean', 'median'], 'new_price': ['mean', 'median']})
 
         # Hiển thị biểu đồ
-        # Vẽ biểu đồ
-        fig = Figure()
-        ax = fig.add_subplot(111)
-        ax.bar(brand_count.index, brand_count.values)
+        df_grouped.plot(kind='bar')
+        plt.title('Trung bình và trung vị old_price và new_price với các Brand')
+        plt.xlabel('Brand')
+        plt.ylabel('Price')
+        plt.show()
 
-        # Đặt tên cho trục x và trục y
-        ax.set_xlabel('Brand')
-        ax.set_ylabel('Number of Productss')
-        return FigureCanvas(fig)
+    def number_product():
+        df = pd.DataFrame(LaptopModel.convert_list_object(
+            LaptopModel.query.all()))
+        # đếm số lượng sản phẩm của từng brand
+        brand_counts = df['brand'].value_counts()
 
-    def min_max_brand(laptops):
-        df = pd.DataFrame(LaptopModel.convert_list_object(laptops))
-        # Định dạng lại dữ liệu
-        # Định dạng lại dữ liệu
-        brand_discount = df.groupby('brand')['percent_discount'].agg(['min', 'max'])
+        # trực quan hóa bằng biểu đồ cột
+        brand_counts.plot(kind='bar', color='blue')
 
-        # Vẽ biểu đồ
-        fig, ax = plt.subplots()
-        brand_discount.plot(kind='bar', ax=ax)
-
-        # Đặt tên cho trục x và trục y
-        ax.set_xlabel('Brand')
-        ax.set_ylabel('Percent Discount')
-        return FigureCanvas(fig)
-
-    def new_price_best_seller(laptops):
-        df = pd.DataFrame(LaptopModel.convert_list_object(laptops))
-        # Lọc các sản phẩm là BestSeller
-        bestsellers = df[df['best_seller'] == True]
-
-        # Tạo instance của Figure
-        fig = plt.figure()
-
-        # Vẽ histogram trên Figure
-        plt.hist(bestsellers['new_price'], bins=10)
-
-        # Đặt tên cho trục x và trục y
-        plt.xlabel('New Price')
+        # cài đặt tiêu đề và nhãn trục
+        plt.title('Number of products by brand')
+        plt.xlabel('Brand')
         plt.ylabel('Count')
 
-        return FigureCanvas(fig)
+        # hiển thị biểu đồ
+        plt.show()
+
+    def min_max_brand():
+        df = pd.DataFrame(LaptopModel.convert_list_object(
+            LaptopModel.query.all()))
+
+        df['old_price'] = df['old_price'] // 1000
+        df['new_price'] = df['new_price'] // 1000
+
+        # Tính mức giảm giá của từng sản phẩm
+        df['discount'] = df['old_price'] - df['new_price']
+
+        # Tìm sản phẩm có mức giảm giá cao nhất và thấp nhất của từng Brand
+        max_discounts = df.groupby('brand')['discount'].max()
+        min_discounts = df.groupby('brand')['discount'].min()
+        best_discounts = pd.concat([max_discounts, min_discounts], axis=1)
+        best_discounts.columns = ['max_discount', 'min_discount']
+
+        # Vẽ biểu đồ cột
+        best_discounts.plot(kind='bar', figsize=(12, 6))
+        plt.title(
+            'Mức giảm giá cao nhất và thấp nhất của sản phẩm mỗi Brand (x 1000 VND)')
+        plt.xlabel('Brand')
+        plt.ylabel('Discount (VND)')
+        plt.xticks(rotation=45)
+        plt.show()
+
+    def new_price_best_seller():
+        best_sellers = LaptopModel.query.filter_by(best_seller=True).with_entities(
+            LaptopModel.name, LaptopModel.new_price).all()
+
+        # Tạo danh sách tên sản phẩm và giá tương ứng
+        product_names = [product[0] for product in best_sellers]
+        prices = [product[1] // 1000 for product in best_sellers]
+
+        # Tạo biểu đồ cột
+        fig, ax = plt.subplots()
+        ax.bar(product_names, prices)
+
+        # Đặt tên cho trục x và trục y
+        ax.set_xlabel('Sản phẩm')
+        ax.set_ylabel('Giá')
+
+        # Đặt tiêu đề cho biểu đồ
+        ax.set_title(
+            'Giá new_price của các sản phẩm là BestSeller (x 1000 VND)')
+
+        # Hiển thị biểu đồ
+        plt.show()

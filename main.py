@@ -1,11 +1,8 @@
 from crawl import Crawl
-from flask import Flask, render_template, Response, request, redirect, url_for, flash
+from flask import Flask, render_template, Response, request, redirect, url_for, flash, make_response
 from flask_cors import CORS
 from config import Config
 from models import db, LaptopModel
-import matplotlib.pyplot as plt
-from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
-import io
 
 app = Flask(__name__)
 app.secret_key = 'key_bao_mat'
@@ -20,37 +17,28 @@ CORS(app)
 db.init_app(app)
 
 
+@app.route('/avg-product')
+def avg_brand():
+    LaptopModel.trungbinh_trungvi()
+    return redirect(url_for('index'))
+
+
 @app.route('/number-product')
 def number_product():
-
-    laptops = LaptopModel.query.all()
-    canvas = LaptopModel.number_product(laptops)
-    output = io.BytesIO()
-    canvas.print_png(output)
-    # Truyền dữ liệu ảnh đến trang web
-    return Response(output.getvalue(), mimetype='image/png')
+    LaptopModel.number_product()
+    return redirect(url_for('index'))
 
 
 @app.route('/percent-discount')
 def percent_discount():
-
-    laptops = LaptopModel.query.all()
-    canvas = LaptopModel.min_max_brand(laptops)
-    output = io.BytesIO()
-    canvas.print_png(output)
-    # Truyền dữ liệu ảnh đến trang web
-    return Response(output.getvalue(), mimetype='image/png')
+    LaptopModel.min_max_brand()
+    return redirect(url_for('index'))
 
 
 @app.route('/new-price')
 def new_price_best_seller():
-
-    laptops = LaptopModel.query.all()
-    canvas = LaptopModel.new_price_best_seller(laptops)
-    output = io.BytesIO()
-    canvas.print_png(output)
-    # Truyền dữ liệu ảnh đến trang web
-    return Response(output.getvalue(), mimetype='image/png')
+    LaptopModel.new_price_best_seller()
+    return redirect(url_for('index'))
 
 # Route crawl dữ liệu từ trang web gearvn.com
 
@@ -61,8 +49,6 @@ def crawl_laptop():
     laptops = Crawl.get_laptop_from_url(url)
     for laptop in laptops:
         laptop.save()
-
-    LaptopModel.avg_price(laptops)
 
     # return LaptopModel.serialize_list(laptops)
     return redirect(url_for('index'))
