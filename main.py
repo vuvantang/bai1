@@ -60,6 +60,11 @@ def crawl_laptop():
     
     return LaptopModel.serialize_list(laptops)
 
+@app.route('/laptops')
+def list_laptops():
+    laptops = LaptopModel.query.all()
+    return render_template('laptops.html', laptops=laptops)
+
 if __name__ == '__main__':
     with app.app_context():
         # Tạo tất cả bảng nếu chưa tồn tại
