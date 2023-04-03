@@ -62,14 +62,19 @@ class LaptopModel(db.Model):
     def trungbinh_trungvi():
         df = pd.DataFrame(LaptopModel.convert_list_object(
             LaptopModel.query.all()))
+
+        df['old_price'] = df['old_price'] // 1000
+        df['new_price'] = df['new_price'] // 1000
+
         df_grouped = df.groupby('brand').agg(
             {'old_price': ['mean', 'median'], 'new_price': ['mean', 'median']})
 
         # Hiển thị biểu đồ
         df_grouped.plot(kind='bar')
-        plt.title('Trung bình và trung vị old_price và new_price với các Brand')
-        plt.xlabel('Brand')
-        plt.ylabel('Price')
+        plt.title(
+            'Trung bình và trung vị giá cũ và giá mới với các Thương hiệu (x 1000 VND)')
+        plt.xlabel('Thương hiệu')
+        plt.ylabel('Giá VND')
         plt.show()
 
     def number_product():
@@ -82,9 +87,9 @@ class LaptopModel(db.Model):
         brand_counts.plot(kind='bar', color='blue')
 
         # cài đặt tiêu đề và nhãn trục
-        plt.title('Number of products by brand')
-        plt.xlabel('Brand')
-        plt.ylabel('Count')
+        plt.title('Số lượng sản phẩm theo Thương hiệu')
+        plt.xlabel('Thương hiệu')
+        plt.ylabel('Số lượng')
 
         # hiển thị biểu đồ
         plt.show()
@@ -109,8 +114,8 @@ class LaptopModel(db.Model):
         best_discounts.plot(kind='bar', figsize=(12, 6))
         plt.title(
             'Mức giảm giá cao nhất và thấp nhất của sản phẩm mỗi Brand (x 1000 VND)')
-        plt.xlabel('Brand')
-        plt.ylabel('Discount (VND)')
+        plt.xlabel('Thương hiệu')
+        plt.ylabel('Mức giảm giá (VND)')
         plt.xticks(rotation=45)
         plt.show()
 
@@ -132,7 +137,7 @@ class LaptopModel(db.Model):
 
         # Đặt tiêu đề cho biểu đồ
         ax.set_title(
-            'Giá new_price của các sản phẩm là BestSeller (x 1000 VND)')
+            'Giá mới của các sản phẩm bán chạy (x 1000 VND)')
 
         # Hiển thị biểu đồ
         plt.show()

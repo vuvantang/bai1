@@ -1,5 +1,5 @@
-{% extends 'base.html' %} {% block title %}Edit Laptop{% endblock %} {% block
-content %} {% if laptop.id %}
+{% extends 'base.html' %} {% block title %}{% if laptop.id %} Sửa Laptop {% else
+%} Thêm Laptop {% endif %} {% endblock %} {% block content %} {% if laptop.id %}
 <h1>Sửa Laptop</h1>
 {% else %}
 <h1>Thêm Laptop</h1>

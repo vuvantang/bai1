@@ -40,8 +40,6 @@ def new_price_best_seller():
     LaptopModel.new_price_best_seller()
     return redirect(url_for('index'))
 
-# Route crawl dữ liệu từ trang web gearvn.com
-
 
 @app.route('/crawl', methods=['GET'])
 def crawl_laptop():
@@ -50,7 +48,6 @@ def crawl_laptop():
     for laptop in laptops:
         laptop.save()
 
-    # return LaptopModel.serialize_list(laptops)
     return redirect(url_for('index'))
 
 
@@ -79,11 +76,12 @@ def edit_laptop(laptop_id=None):
         laptop.percent_discount = request.form['percent_discount']
         laptop.best_seller = request.form.get('best_seller') == 'on'
 
+        # Kiểm tra nếu ko có Id thì thêm mới
         if not laptop_id:
             db.session.add(laptop)
 
         db.session.commit()
-        flash('Cập nhật thông tin thành công!', 'success')
+        flash('Lưu thông tin thành công!', 'success')
         return redirect(url_for('index'))
     return render_template('edit_laptop.html', laptop=laptop)
 
