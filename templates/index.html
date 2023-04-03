@@ -1,0 +1,81 @@
+{% extends 'base.html' %} {% block title %}Danh sách Laptop{% endblock %} {%
+block content %}
+<a href="{{ url_for('crawl_laptop') }}" class="btn btn-primary btn-sm"
+  >Crawl Data</a
+>
+<a href="{{ url_for('edit_laptop') }}" class="btn btn-primary btn-sm"
+  >Thêm Laptop</a
+>
+<div class="btn-group" role="group" aria-label="Basic example">
+  <button type="button" class="btn btn-success btn-sm">TB & TV Giá cũ</button>
+  <button type="button" class="btn btn-primary btn-sm">
+    Sản phẩm theo Thương hiệu
+  </button>
+  <button type="button" class="btn btn-warning btn-sm">
+    Giá Min, Max theo Thương hiệu
+  </button>
+  <button type="button" class="btn btn-info btn-sm">
+    Giá mới của sản phẩm bán chạy
+  </button>
+</div>
+<table class="table table-striped">
+  <thead>
+    <tr>
+      <th>#</th>
+      <th>ID</th>
+      <th>Tên</th>
+      <th>Thương hiệu</th>
+      <th>Giá cũ</th>
+      <th>Giá mới</th>
+      <th>% Giảm</th>
+      <th>Bán chạy</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for laptop in laptops %}
+    <tr>
+      <td>
+        <a
+          href="{{ url_for('edit_laptop', laptop_id=laptop.id) }}"
+          class="btn btn-warning btn-sm"
+          >Sửa</a
+        >
+        <button
+          type="button"
+          class="btn btn-danger btn-sm"
+          onclick="deleteItem('{{ laptop.id }}')"
+        >
+          Xóa
+        </button>
+      </td>
+      <td>{{ laptop.id }}</td>
+      <td>{{ laptop.name }}</td>
+      <td>{{ laptop.brand }}</td>
+      <td>{{ laptop.old_price }}</td>
+      <td>{{ laptop.new_price }}</td>
+      <td>{{ laptop.percent_discount }}</td>
+      <td>{{ laptop.best_seller }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %} {% block scripts %}
+<script>
+  function deleteItem(laptopId) {
+    if (confirm("Bạn có chắc chắn muốn xóa sản phẩm này không?")) {
+      fetch(`/delete_laptop/${laptopId}`, { method: "DELETE" })
+        .then((response) => response.json())
+        .then((data) => {
+          if (data.result === "success") {
+            location.reload();
+          } else {
+            alert("Xóa item không thành công!");
+          }
+        })
+        .catch((error) => {
+          alert(error);
+        });
+    }
+  }
+</script>
+{% endblock %}
